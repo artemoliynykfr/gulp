@@ -1,11 +1,9 @@
-const {
-	src,
-	dest
-} = require('gulp');
+const { src, dest } = require('gulp');
 const changed = require('gulp-changed');
 const imagemin = require('gulp-imagemin');
 const bs = require('browser-sync');
 const plumber = require('gulp-plumber');
+const clean = require('gulp-clean');
 
 module.exports = function rastr() {
 	return src('src/img/**/*.+(png|jpg|jpeg|gif|svg|ico|mp4|mp3)')
@@ -24,4 +22,7 @@ module.exports = function rastr() {
 		]))
 		.pipe(dest('build/img'))
 		.pipe(bs.stream())
+		.pipe(clean('build/img', {
+			force: true
+		}));
 }

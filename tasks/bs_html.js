@@ -16,6 +16,7 @@ module.exports = function bs_html() {
 		logLevel: 'silent',
 		online: false,
 		notify: false,
+		mime: false,
 		scrollRestoreTechnique: 'cookie',
 	})
 }

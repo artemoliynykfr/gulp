@@ -1,4 +1,6 @@
-@import 'base/*.scss';
+@import 'global/_mixins.scss';
+@import 'fonts.scss';
+@import 'normalize.scss';
 @import 'global/*.scss';
+@import 'base/*.scss';
 @import '**/_*.scss';
-@import '../components/**/*.scss';

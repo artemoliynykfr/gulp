@@ -1,14 +1,3 @@
-"use strict";
-export function tags(tagID) {
-  document.addEventListener("DOMContentLoaded", () => {
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-    gtag("js", new Date());
-    gtag("config", `${tagID}`);
-  });
-}
 export function fixedEl(el, px) {
   if (document.querySelector(`${el}`)) {
     el = document.querySelector(`${el}`);

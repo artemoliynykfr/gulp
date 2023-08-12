@@ -1,5 +1,4 @@
-"use strict";
-import { burgerMenu, fixedEl, selectEl, loadMore } from "./global.js";
+import { burgerMenu, fixedEl, selectEl } from "./global.js";
 //
 burgerMenu(".burger", ".nav__menu");
 fixedEl(".navbar", 1);

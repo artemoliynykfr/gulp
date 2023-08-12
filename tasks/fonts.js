@@ -2,7 +2,7 @@ const { src, dest } = require('gulp');
 const fs = require('fs').promises;
 const changed = require('gulp-changed');
 const gulpFont = require('gulp-font');
-const srcFonts = 'src/scss/fonts.scss';
+const srcFonts = 'src/scss/font.css';
 const appFonts = 'build/fonts/';
 const validFontExtensions = ['woff', 'woff2', 'otf'];
 
