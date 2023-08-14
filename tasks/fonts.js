@@ -1,56 +1,71 @@
-const { src, dest } = require('gulp');
-const fs = require('fs').promises;
-const changed = require('gulp-changed');
-const gulpFont = require('gulp-font');
-const srcFonts = 'src/scss/font.css';
-const appFonts = 'build/fonts/';
-const validFontExtensions = ['woff', 'woff2', 'otf'];
+const { src } = require('gulp');
+const fs = require('fs');
+const through2 = require('through2');
 
-module.exports = async function fonts(done) {
-  try {
-    await fs.writeFile(srcFonts, '');
-
-    const items = await fs.readdir(appFonts);
-    let c_fontname;
-
-    for (const item of items) {
-      const [fontname, fontExt] = item.split('.');
-      if (validFontExtensions.includes(fontExt) && c_fontname !== fontname) {
-        await fs.appendFile(srcFonts, `@include font-face("${fontname}", "${fontname}", "${fontweight}");\r\n`);
+module.exports = function fonts(done) {
+  let fontsCss = '';
+  let fontWeight;
+  let fontStyle;
+  return src('build/fonts/*.{woff,woff2}')
+    .pipe(through2.obj((file, enc, cb) => {
+      const fontName = file.stem;
+      const fontThin = fontName.includes('Thin', "thin")
+      const fontBook = fontName.includes('Book', "book", "ExtraL", "extral", "Extral")
+      const fontRegular = fontName.includes('Regular', "regular", "Normal", "normal")
+      const fontBold = fontName.includes('Bold', "bold")
+      const fontMedium = fontName.includes('Medium', "medium")
+      const fontLight = fontName.includes('Light', "light")
+      const fontSemiBold = fontName.includes('Semibold', "semibold", 'SemiBold', "semiBold", "semibold")
+      const fontExBold = fontName.includes('ExtraB', "Extrab", "extraB", "extrab")
+      const fontBlack = fontName.includes('Black', "black", "heavy", "Heavy")
+      const fontItalic = fontName.includes('Italic', "italic")
+      fontWeight = "normal"
+      fontStyle = "normal"
+      if (fontItalic) {
+        fontStyle = "italic"
       }
-      c_fontname = fontname;
-    }
+      if (fontThin) {
+        fontWeight = 100
+      }
+      if (fontBook) {
+        fontWeight = 200
+      }
+      if (fontLight) {
+        fontWeight = 300
+      }
+      if (fontRegular) {
+        fontWeight = 400
+      }
+      if (fontMedium) {
+        fontWeight = 500
+      }
+      if (fontSemiBold) {
+        fontWeight = 600
+      }
+      if (fontBold) {
+        fontWeight = 700
+      }
+      if (fontExBold) {
+        fontWeight = 800
+      }
+      if (fontBlack) {
+        fontWeight = 900
+      }
+      fontsCss += 
+`/* ${fontName} */
+@font-face {
+  font-family: '${fontName.split('-')[0]}', sans-serif;
+  font-style: ${fontStyle};
+  font-weight: ${fontWeight};
+  font-display: block;
+  src: url(${fontName}.eot);
+  src: url(${fontName}.eot) format("embedded-opentype"), url(${fontName}.woff) format("woff"), url(${fontName}.ttf) format("truetype");
+}
 
-    const fontSrc = 'src/fonts/**/*.ttf';
-    const fontDest = 'build/fonts';
-
-    src(fontSrc)
-      .pipe(changed(fontDest, { extension: 'woff', hasChanged: changed.compareLastModifiedTime }))
-      .pipe(gulpFont({
-        formats: ['woff'],
-        dest: fontDest
-      }))
-      .pipe(dest(fontDest));
-
-    src(fontSrc)
-      .pipe(changed(fontDest, { extension: 'woff2', hasChanged: changed.compareLastModifiedTime }))
-      .pipe(gulpFont({
-        formats: ['woff2'],
-        dest: fontDest
-      }))
-      .pipe(dest(fontDest));
-
-    src(fontSrc)
-      .pipe(changed(fontDest, { extension: 'otf', hasChanged: changed.compareLastModifiedTime }))
-      .pipe(gulpFont({
-        formats: ['otf'],
-        dest: fontDest
-      }))
-      .pipe(dest(fontDest));
-
-    done();
-  } catch (error) {
-    console.error('Error:', error);
-    done(error);
-  }
+`;
+      cb(null, file);
+    }))
+    .on('end', () => {
+      fs.writeFileSync('build/css/fonts.css', fontsCss);
+    });
 };

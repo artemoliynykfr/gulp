@@ -1,28 +1,20 @@
 const { src, dest } = require('gulp');
-const changed = require('gulp-changed');
-const imagemin = require('gulp-imagemin');
 const bs = require('browser-sync');
-const plumber = require('gulp-plumber');
-const clean = require('gulp-clean');
+import image from 'gulp-image';
 
-module.exports = function rastr() {
-	return src('src/img/**/*.+(png|jpg|jpeg|gif|svg|ico|mp4|mp3)')
-		.pipe(plumber())
-		.pipe(changed('build/img'))
-		.pipe(imagemin([
-			imagemin.gifsicle({ interlaced: true }),
-			imagemin.mozjpeg({ quality: 85, progressive: true }),
-			imagemin.optipng({ optimizationLevel: 5 }),
-			imagemin.svgo({
-				plugins: [
-					{ removeViewBox: true },
-					{ cleanupIDs: true }
-				]
-			})
-		]))
+module.exports = async function rastr() {
+	return src('build/img/**/*.+(png|jpg|jpeg|gif|svg|ico|mp4|mp3)')
+		.pipe(image({
+			pngquant: true,
+			optipng: false,
+			zopflipng: true,
+			jpegRecompress: false,
+			mozjpeg: true,
+			gifsicle: true,
+			svgo: true,
+			concurrent: 10,
+			quiet: true
+		}))
 		.pipe(dest('build/img'))
 		.pipe(bs.stream())
-		.pipe(clean('build/img', {
-			force: true
-		}));
 }

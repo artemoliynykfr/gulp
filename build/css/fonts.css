@@ -1,0 +1,30 @@
+/* Arial-Black */
+@font-face {
+  font-family: 'Arial', sans-serif;
+  font-style: normal;
+  font-weight: 900;
+  font-display: block;
+  src: url(Arial-Black.eot);
+  src: url(Arial-Black.eot) format("embedded-opentype"), url(Arial-Black.woff) format("woff"), url(Arial-Black.ttf) format("truetype");
+}
+
+/* Arial-BoldMT */
+@font-face {
+  font-family: 'Arial', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url(Arial-BoldMT.eot);
+  src: url(Arial-BoldMT.eot) format("embedded-opentype"), url(Arial-BoldMT.woff) format("woff"), url(Arial-BoldMT.ttf) format("truetype");
+}
+
+/* Arial-italic */
+@font-face {
+  font-family: 'Arial', sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-display: block;
+  src: url(Arial-italic.eot);
+  src: url(Arial-italic.eot) format("embedded-opentype"), url(Arial-italic.woff) format("woff"), url(Arial-italic.ttf) format("truetype");
+}
+
