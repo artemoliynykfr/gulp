@@ -10,25 +10,29 @@
     "gulp-concat": "^2.6.1",
     "gulp-fonter": "^0.3.0",
     "gulp-imagemin": "^8.0.0",
+    "gulp-js-minify": "^0.0.3",
     "gulp-sass": "^5.1.0",
-    "gulp-uglify": "^3.0.2",
     "gulp-webp": "^4.0.1",
+    "media-query-nesting": "github:kiforks/media-query-nesting",
     "through2": "^4.0.2"
   },
   "dependencies": {
     "@babel/core": "^7.22.5",
+    "css-mqpacker": "^7.0.0",
     "gulp-changed": "^4.0.3",
     "gulp-clean": "^0.4.0",
+    "gulp-dart-sass": "^1.1.0",
+    "gulp-extract-media-queries": "^1.1.0",
     "gulp-file-include": "^2.3.0",
     "gulp-font": "^1.0.4",
     "gulp-image": "^6.3.1",
     "gulp-plumber": "^1.2.1",
     "gulp-sass-bulk-importer": "^3.0.2",
-    "gulp-uglify-es": "^3.0.0",
-    "imagemin-jpeg-recompress": "^7.1.0",
-    "imagemin-pngquant": "^9.0.2",
+    "media-query-parser": "^2.0.2",
+    "merge-stream": "^2.0.0",
     "require-dir": "^1.2.0",
-    "sass": "^1.54.4"
-  },
-  "packageManager": "yarn@3.6.0"
+    "sass": "^1.54.4",
+    "stream": "^0.0.2",
+    "stylelint": "^15.10.2"
+  }
 }

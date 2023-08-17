@@ -1,18 +1,27 @@
+/* version 1.0 */
+/* 
+  import all dependecies
+  don't use require(), because it's module type document
+  if plugin don't support import, find another
+*/
 import gulp from 'gulp';
-const { src, dest, parallel } = gulp;
+const { src, dest, parallel, watch } = gulp;
 import bs from 'browser-sync';
 import fs from 'fs';
 import include from 'gulp-file-include';
 import through2 from 'through2';
-import uglify from 'gulp-uglify-es';
 import concat from 'gulp-concat';
+import minifyjs from 'gulp-js-minify';
 import image from 'gulp-image';
-import sass from "gulp-sass";
+import dartSass from 'gulp-dart-sass';
+import mqpacker from 'css-mqpacker';
+import MediaQueryNesting from 'media-query-nesting';
 import bulk from "gulp-sass-bulk-importer";
 import prefixer from "gulp-autoprefixer";
 import clean from "gulp-clean-css";
 import fonter from 'gulp-fonter';
 import webpConv from 'gulp-webp';
+/* local server */
 function browsersync() {
   bs.init({
     server: {
@@ -21,6 +30,7 @@ function browsersync() {
     port: 3000,
   })
 }
+/* generate styles for fonts */
 function fonts(done) {
   let fontsCss = '';
   let fontWeight;
@@ -28,6 +38,10 @@ function fonts(done) {
   return src('build/fonts/*.{woff,woff2}')
     .pipe(through2.obj((file, enc, cb) => {
       const fontName = file.stem;
+      /* 
+        make fonts.css more automatic - give styles by fontName
+        it's quite big code, maybe I'll optimize it
+      */
       const fontThin = fontName.includes('Thin', "thin")
       const fontBook = fontName.includes('Book', "book", "ExtraL", "extral", "Extral")
       const fontRegular = fontName.includes('Regular', "regular", "Normal", "normal")
@@ -70,6 +84,7 @@ function fonts(done) {
       if (fontBlack) {
         fontWeight = 900
       }
+      /* generate style for font */
       fontsCss +=
         `/* ${fontName} */
 @font-face {
@@ -84,24 +99,27 @@ function fonts(done) {
 `;
       cb(null, file);
     }))
+    /* return style to fonts.css */
     .on('end', () => {
       fs.writeFileSync('build/css/fonts.css', fontsCss);
     });
 };
+/* compile html */
 function html() {
   return src(['src/**/*.html', '!src/components/**/*.html'])
     .pipe(include())
     .pipe(dest('build'))
     .pipe(bs.stream())
 }
+/* compile js (min and not win version) */
 function js() {
-  return src(['src/components/**/*.js', 'src/js/script.js'])
-    .pipe(dest('build/js/'))
-    .pipe(uglify())
+  return src('src/js/script.js')
     .pipe(concat('script.min.js'))
-    .pipe(dest('build/js/'))
-    .pipe(bs.stream())
+    .pipe(minifyjs())
+    .pipe(gulp.dest('build/js/'))
+    .pipe(bs.stream());
 }
+/* compile images and change quility */
 function rastr() {
   return src('build/img/**/*.+(png|jpg|jpeg|gif|svg|ico|mp4|mp3)')
     .pipe(image({
@@ -118,25 +136,27 @@ function rastr() {
     .pipe(dest('build/img'))
     .pipe(bs.stream())
 }
+/* compiles scss, create min and not min version, create media.css file */
 function style() {
-  const minstyle = src("src/scss/**/*.scss")
+  const isMinified = true;
+  const stylesDefault = src('src/scss/**/*.scss')
     .pipe(bulk())
     .pipe(
-      sass({
-        outputStyle: "compressed",
-      }).on("error", sass.logError)
+      dartSass({
+        outputStyle: isMinified ? 'compressed' : 'expanded',
+      }).on('error', dartSass.logError)
     )
     .pipe(
       prefixer({
-        overrideBrowserslist: ["last 8 versions"],
+        overrideBrowserslist: ['last 8 versions'],
         browsers: [
-          "Android >= 4",
-          "Chrome >= 20",
-          "Firefox >= 24",
-          "Explorer >= 11",
-          "iOS >= 6",
-          "Opera >= 12",
-          "Safari >= 6",
+          'Android >= 4',
+          'Chrome >= 20',
+          'Firefox >= 24',
+          'Explorer >= 11',
+          'iOS >= 6',
+          'Opera >= 12',
+          'Safari >= 6',
         ],
       })
     )
@@ -145,33 +165,20 @@ function style() {
         level: 2,
       })
     )
-    .pipe(concat("style.min.css"))
-    .pipe(dest("build/css/"))
+    .pipe(concat(isMinified ? 'style.min.css' : 'style.css'))
+    .pipe(dest('build/css/'))
     .pipe(bs.stream());
-  const notminstyle = src("src/scss/**/*.scss")
-    .pipe(bulk())
-    .pipe(
-      sass().on("error", sass.logError)
-    )
-    .pipe(
-      prefixer({
-        overrideBrowserslist: ["last 8 versions"],
-        browsers: [
-          "Android >= 4",
-          "Chrome >= 20",
-          "Firefox >= 24",
-          "Explorer >= 11",
-          "iOS >= 6",
-          "Opera >= 12",
-          "Safari >= 6",
-        ],
-      })
-    )
-    .pipe(concat("style.css"))
-    .pipe(dest("build/css/"))
-    .pipe(bs.stream());
-  return notminstyle, minstyle
+
+  const mediaQueryPipeline = src('src/scss/**/*.scss')
+    .pipe(mediaQueryNesting.extract())
+    .pipe(mediaQueryNesting.group())
+    .pipe(mediaQueryNesting.combine())
+    .pipe(mqpacker())
+    .pipe(concat('media.css'))
+    .pipe(dest('build/css/'));
+  return merge(stylesDefault, mediaQueryPipeline);
 };
+/* generate and convert fonts */
 function ttf(done) {
   src('build/fonts/**/*.ttf')
     .pipe(fonter({
@@ -180,17 +187,20 @@ function ttf(done) {
     .pipe(dest('build/fonts'));
   done();
 }
+/* watch chenges and reload */
 function watching() {
-  watch('src/**/*.html', parallel('html'));
-  watch('src/**/*.scss', parallel('style'));
-  watch('src/**/*.js', parallel('js'));
-  watch('src/**/*.json', parallel('html'));
+  watch('src/**/*.html', parallel('htmlRun'));
+  watch('src/**/*.scss', parallel('styleRun'));
+  watch('src/**/*.js', parallel('jsRun'));
+  watch('src/**/*.json', parallel('htmlRun'));
 }
+/* convert to webp */
 function webp() {
   return src('build/img/**/*-bg*.+(png|jpg|jpeg)')
     .pipe(webpConv())
     .pipe(dest('build/img'))
 }
+/* create tasks from functions */
 export const browsersyncRun = browsersync;
 export const htmlRun = html;
 export const styleRun = style;
@@ -200,6 +210,10 @@ export const rastrRun = rastr;
 export const webpRun = webp;
 export const ttfRun = ttf;
 export const fontsRun = fonts;
+/* default task for gulp */
 gulp.task('default', parallel(browsersyncRun, htmlRun, styleRun, jsRun, watchingRun));
+/* run not with default, because it slow down main thread */
+/* task for images - compile images and change quility, convert to webp*/
 gulp.task('images', parallel(rastrRun, webpRun));
+/* task for images - generate and convert fonts, generate styles for fonts */
 gulp.task('fonts', parallel(ttfRun, fontsRun));
